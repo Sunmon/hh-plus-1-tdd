@@ -49,7 +49,9 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-        return new UserPoint(0, 0, 0);
+        // TODO System.currentMillis는 굳이 인자로 안 넣어주고 생성할때 자동으로 생성할 수 있지 않나?
+        UserPoint userPoint = userPointTable.selectById(id);
+        return userPointTable.insertOrUpdate(id, userPoint.point() + amount);
     }
 
     /**
