@@ -40,4 +40,19 @@ class PointControllerTest {
         assertThat(userPointTable.selectById(id2).point()).isEqualTo(2000);
     }
 
+
+    @DisplayName("특정 유저의 포인트를 사용한다")
+    @Test
+    void use() {
+        // given
+        long id = 123L;
+        UserPointTable userPointTable = new UserPointTable();
+        //when
+        PointController pointController = new PointController(userPointTable);
+
+        pointController.charge(id, 1000);
+        pointController.use(id, 600);
+        // then
+        assertThat(userPointTable.selectById(id).point()).isEqualTo(400);
+    }
 }

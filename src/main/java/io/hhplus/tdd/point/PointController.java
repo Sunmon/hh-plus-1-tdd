@@ -62,6 +62,7 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-        return new UserPoint(0, 0, 0);
+        UserPoint userPoint = userPointTable.selectById(id);
+        return userPointTable.insertOrUpdate(id, userPoint.point() - amount);
     }
 }
