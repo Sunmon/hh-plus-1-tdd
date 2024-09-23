@@ -1,5 +1,6 @@
 package io.hhplus.tdd.point;
 
+import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +15,12 @@ public class PointController {
 
     private static final Logger log = LoggerFactory.getLogger(PointController.class);
     private final UserPointTable userPointTable;
+    private final PointHistoryTable pointHistoryTable;
 
     @Autowired
-    public PointController(UserPointTable userPointTable) {
+    public PointController(UserPointTable userPointTable, PointHistoryTable pointHistoryTable) {
         this.userPointTable = userPointTable;
+        this.pointHistoryTable = pointHistoryTable;
     }
 
 
@@ -38,7 +41,8 @@ public class PointController {
     public List<PointHistory> history(
             @PathVariable long id
     ) {
-        return List.of();
+        // NOTE - 원본을 불변으로 넘겨줄 필요가 있는지?
+        return pointHistoryTable.selectAllByUserId(id);
     }
 
     /**
@@ -51,6 +55,8 @@ public class PointController {
     ) {
         // TODO System.currentMillis는 굳이 인자로 안 넣어주고 생성할때 자동으로 생성할 수 있지 않나?
         UserPoint userPoint = userPointTable.selectById(id);
+        // FIXME 이 지점에 히스토리를 넣는게 맞나? 리턴하기 전... 유저포인트 업데이트 하기 전에?
+        pointHistoryTable.insert(userPoint.id(), amount, TransactionType.CHARGE, 0);
         return userPointTable.insertOrUpdate(id, userPoint.point() + amount);
     }
 
@@ -63,6 +69,8 @@ public class PointController {
             @RequestBody long amount
     ) {
         UserPoint userPoint = userPointTable.selectById(id);
+        // FIXME 이 지점에 히스토리를 넣는게 맞나? 리턴하기 전... 유저포인트 업데이트 하기 전에?
+        pointHistoryTable.insert(userPoint.id(), amount, TransactionType.USE, 0);
         return userPointTable.insertOrUpdate(id, userPoint.point() - amount);
     }
 }
