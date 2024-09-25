@@ -14,13 +14,12 @@ import java.util.List;
 public class PointController {
 
     private static final Logger log = LoggerFactory.getLogger(PointController.class);
-    private final UserPointTable userPointTable;
-    private final PointHistoryTable pointHistoryTable;
+    private final PointService pointService;
+
 
     @Autowired
-    public PointController(UserPointTable userPointTable, PointHistoryTable pointHistoryTable) {
-        this.userPointTable = userPointTable;
-        this.pointHistoryTable = pointHistoryTable;
+    public PointController(PointService pointService) {
+        this.pointService = pointService;
     }
 
 
@@ -31,7 +30,7 @@ public class PointController {
     public UserPoint point(
             @PathVariable long id
     ) {
-        return userPointTable.selectById(id);
+        return pointService.getUserPoint(id);
     }
 
     /**
@@ -42,7 +41,8 @@ public class PointController {
             @PathVariable long id
     ) {
         // NOTE - 원본을 불변으로 넘겨줄 필요가 있는지?
-        return pointHistoryTable.selectAllByUserId(id);
+//        return pointHistoryTable.selectAllByUserId(id);
+        return null;
     }
 
     /**
@@ -53,11 +53,9 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-        // TODO System.currentMillis는 굳이 인자로 안 넣어주고 생성할때 자동으로 생성할 수 있지 않나?
-        UserPoint userPoint = userPointTable.selectById(id);
-        // FIXME 이 지점에 히스토리를 넣는게 맞나? 리턴하기 전... 유저포인트 업데이트 하기 전에?
-        pointHistoryTable.insert(userPoint.id(), amount, TransactionType.CHARGE, 0);
-        return userPointTable.insertOrUpdate(id, userPoint.point() + amount);
+
+        return pointService.chargeUserPoints(id, amount);
+
     }
 
     /**
@@ -68,9 +66,6 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-        UserPoint userPoint = userPointTable.selectById(id);
-        // FIXME 이 지점에 히스토리를 넣는게 맞나? 리턴하기 전... 유저포인트 업데이트 하기 전에?
-        pointHistoryTable.insert(userPoint.id(), amount, TransactionType.USE, 0);
-        return userPointTable.insertOrUpdate(id, userPoint.point() - amount);
+        return pointService.useUserPoints(id, amount);
     }
 }
