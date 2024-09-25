@@ -26,9 +26,8 @@ public class PointService {
      * @return
      */
     public UserPoint chargeUserPoints(long userId, long amount) {
+        if (amount < 0) throw new PointException(ErrorCode.INVALID_POINT_AMOUNT);
         // TODO try-catch
-        // TODO System.currentMillis는 굳이 인자로 안 넣어주고 생성할때 자동으로 생성할 수 있지 않나?
-
         UserPoint userPoint = getUserPoint(userId);
         // FIXME 이 지점에 히스토리를 넣는게 맞나? 리턴하기 전... 유저포인트 업데이트 하기 전에?
         return userPointTable.insertOrUpdate(userId, userPoint.point() + amount);
@@ -43,9 +42,13 @@ public class PointService {
      * @param amount
      * @return
      */
-    public UserPoint useUserPoints(long userId, long amount) {
+    public UserPoint useUserPoints(long userId, long amount) throws PointException {
+        if (amount < 0) throw new PointException(ErrorCode.INVALID_POINT_AMOUNT);
         // TODO try-catch
         UserPoint userPoint = getUserPoint(userId);
+        if (userPoint.point() < amount) throw new PointException(ErrorCode.INSUFFICIENT_POINTS);
+
+
         return userPointTable.insertOrUpdate(userId, userPoint.point() - amount);
 //        pointHistoryTable
 //        return getUserPoint(userId);

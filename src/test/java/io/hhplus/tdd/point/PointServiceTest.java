@@ -8,12 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class) // 자동으로 Mock객체 초기화, 정리
@@ -30,12 +30,6 @@ public class PointServiceTest {
 
     @BeforeEach
     void beforeEach() {
-//        MockitoAnnotations.openMocks(this);
-//        pointHistoryTable = new PointHistoryTable();
-//        userPointTable = new UserPointTable();
-//        pointService = new PointService(userPointTable, pointHistoryTable);
-
-
     }
 
     @DisplayName("특정 유저의 포인트를 조회한다.")
@@ -97,5 +91,58 @@ public class PointServiceTest {
 
         //then
         assertThat(point).isEqualTo(updatedMockPoint);
+    }
+
+    @DisplayName("잔액이 부족할 경우 돈을 사용할 수 없다.")
+    @Test
+    void testUseUserPointInsufficientBalance() {
+        //given
+        long id = 999;
+        long initialAmount = 1000;
+        long currentTime = Clock.systemDefaultZone().millis();
+        long useAmount = 5000;
+
+        UserPoint mockPoint = new UserPoint(id, initialAmount, currentTime);
+        when(userPointTable.selectById(id)).thenReturn(mockPoint);
+
+        //when, then
+        assertThatThrownBy(() -> pointService.useUserPoints(id, useAmount))
+                .isInstanceOf(PointException.class)
+                .extracting(err -> ((PointException) err).getErrorCode())
+                .isEqualTo(ErrorCode.INSUFFICIENT_POINTS);
+
+    }
+
+    @DisplayName("충전/사용금액을 음수로 설정할 수 없다.")
+    @Test
+    void testNegativeAmountPoint() {
+        //given
+        long id = 999;
+        long negativeAmount = -5000;
+        long negativeAmountLessThanBalance = -500;
+
+        //when, then
+        // 음수 포인트 사용 테스트
+        assertThatThrownBy(() -> pointService.useUserPoints(id, negativeAmount))
+                .isInstanceOf(PointException.class)
+                .extracting(err -> ((PointException) err).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_POINT_AMOUNT);
+
+        assertThatThrownBy(() -> pointService.useUserPoints(id, negativeAmountLessThanBalance))
+                .isInstanceOf(PointException.class)
+                .extracting(err -> ((PointException) err).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_POINT_AMOUNT);
+
+        // 음수 포인트 충전 테스트
+        assertThatThrownBy(() -> pointService.chargeUserPoints(id, negativeAmount))
+                .isInstanceOf(PointException.class)
+                .extracting(err -> ((PointException) err).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_POINT_AMOUNT);
+
+        assertThatThrownBy(() -> pointService.chargeUserPoints(id, negativeAmountLessThanBalance))
+                .isInstanceOf(PointException.class)
+                .extracting(err -> ((PointException) err).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_POINT_AMOUNT);
+
     }
 }
