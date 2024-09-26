@@ -65,7 +65,7 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-        log.info("vㅗ인트 사용 id: {}, 금액: {}", id, amount);
+        log.info("포인트 사용 id: {}, 금액: {}", id, amount);
         return pointService.useUserPoints(id, amount);
     }
 }
