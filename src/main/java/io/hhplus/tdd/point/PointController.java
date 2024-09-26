@@ -53,7 +53,7 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-
+// TODO 실수로 들어오는 경우 테스트
         return pointService.chargeUserPoints(id, amount);
 
     }

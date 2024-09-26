@@ -4,14 +4,16 @@ import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
 import org.springframework.beans.factory.annotation.Autowired;
 
+
 public class PointService {
     private final UserPointTable userPointTable;
-    private final PointHistoryTable pointHistoryTable;
+
+    private final PointHistoryService pointHistoryService;
 
     @Autowired
-    public PointService(UserPointTable userPointTable, PointHistoryTable pointHistoryTable) {
+    public PointService(UserPointTable userPointTable, PointHistoryService pointHistoryService) {
         this.userPointTable = userPointTable;
-        this.pointHistoryTable = pointHistoryTable;
+        this.pointHistoryService = pointHistoryService;
     }
 
     public UserPoint getUserPoint(long userId) {
@@ -29,10 +31,11 @@ public class PointService {
         if (amount < 0) throw new PointException(ErrorCode.INVALID_POINT_AMOUNT);
         // TODO try-catch
         UserPoint userPoint = getUserPoint(userId);
+        System.out.println("hello world");
         // FIXME 이 지점에 히스토리를 넣는게 맞나? 리턴하기 전... 유저포인트 업데이트 하기 전에?
-        return userPointTable.insertOrUpdate(userId, userPoint.point() + amount);
-//        pointHistoryTable
-//        return getUserPoint(userId);
+        UserPoint updated = userPointTable.insertOrUpdate(userId, userPoint.point() + amount);
+        pointHistoryService.saveChargeHistory(updated.id(), amount, updated.updateMillis());
+        return updated;
     }
 
     /**
@@ -49,8 +52,9 @@ public class PointService {
         if (userPoint.point() < amount) throw new PointException(ErrorCode.INSUFFICIENT_POINTS);
 
 
-        return userPointTable.insertOrUpdate(userId, userPoint.point() - amount);
-//        pointHistoryTable
-//        return getUserPoint(userId);
+        UserPoint updated = userPointTable.insertOrUpdate(userId, userPoint.point() - amount);
+        pointHistoryService.saveUseHistory(updated.id(), amount, updated.updateMillis());
+        return updated;
     }
+
 }

@@ -28,6 +28,7 @@ public class PointHistoryTable {
         return table.stream().filter(pointHistory -> pointHistory.userId() == userId).toList();
     }
 
+    //  REVIEW -  throttle()은 왜 있는건지 이유 모르겠음. 시간을 지연시켜서 뭐 하는데? 그냥 가상환경을 구현한건가?
     private void throttle(long millis) {
         try {
             TimeUnit.MILLISECONDS.sleep((long) (Math.random() * millis));

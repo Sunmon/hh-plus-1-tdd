@@ -14,15 +14,17 @@ import java.time.Clock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class) // 자동으로 Mock객체 초기화, 정리
 public class PointServiceTest {
 
     @Mock
     UserPointTable userPointTable;
+
     @Mock
-    PointHistoryTable pointHistoryTable;
+    PointHistoryService pointHistoryService;
+
 
     @InjectMocks
     PointService pointService;
@@ -49,7 +51,7 @@ public class PointServiceTest {
         assertThat(point).isEqualTo(mockPoint);
     }
 
-    @DisplayName("특정 유저의 포인트를 충전한다.")
+    @DisplayName("특정 유저의 포인트를 충전하고, 내역을 기록한다.")
     @Test
     void testChargeUserPoint() {
         //given
@@ -69,9 +71,10 @@ public class PointServiceTest {
 
         //then
         assertThat(point).isEqualTo(updatedPoint);
+        verify(pointHistoryService).saveChargeHistory(id, addAmount, currentTime);
     }
 
-    @DisplayName("특정 유저의 포인트를 사용한다.")
+    @DisplayName("특정 유저의 포인트를 사용하고, 내역을 기록한다.")
     @Test
     void testUseUserPoint() {
         //given
@@ -91,6 +94,7 @@ public class PointServiceTest {
 
         //then
         assertThat(point).isEqualTo(updatedMockPoint);
+        verify(pointHistoryService).saveUseHistory(id, useAmount, currentTime); // mock 객체만 검증 가능.
     }
 
     @DisplayName("잔액이 부족할 경우 돈을 사용할 수 없다.")
@@ -110,6 +114,8 @@ public class PointServiceTest {
                 .isInstanceOf(PointException.class)
                 .extracting(err -> ((PointException) err).getErrorCode())
                 .isEqualTo(ErrorCode.INSUFFICIENT_POINTS);
+
+        verify(pointHistoryService, never()).saveUseHistory(id, useAmount, currentTime);
 
     }
 
@@ -144,5 +150,8 @@ public class PointServiceTest {
                 .extracting(err -> ((PointException) err).getErrorCode())
                 .isEqualTo(ErrorCode.INVALID_POINT_AMOUNT);
 
+        verify(pointHistoryService, never()).saveUseHistory(anyLong(), anyLong(), anyLong());
+        verify(pointHistoryService, never()).saveChargeHistory(anyLong(), anyLong(), anyLong());
     }
+
 }
