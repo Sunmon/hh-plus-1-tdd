@@ -2,8 +2,10 @@ package io.hhplus.tdd.point;
 
 import io.hhplus.tdd.database.UserPointTable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
+@Service
 public class PointService {
     private final UserPointTable userPointTable;
 
@@ -30,7 +32,6 @@ public class PointService {
         if (amount < 0) throw new PointException(ErrorCode.INVALID_POINT_AMOUNT);
 
         UserPoint userPoint = getUserPoint(userId);
-        System.out.println("hello world");
         UserPoint updated = userPointTable.insertOrUpdate(userId, userPoint.point() + amount);
         pointHistoryService.saveChargeHistory(updated.id(), amount, updated.updateMillis());
         return updated;
