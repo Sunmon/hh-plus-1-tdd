@@ -153,4 +153,21 @@ public class PointServiceTest {
         verify(pointHistoryService, never()).saveChargeHistory(anyLong(), anyLong(), anyLong());
     }
 
+    @DisplayName("포인트는 최대 충전 한도 내에서만 충전할 수 있다.")
+    @Test
+    void testPointPolicy() {
+        //given
+        long id = 999;
+        long bigAmount = 100000000;
+
+        //when, then
+        // 최대 포인트 충전 테스트
+        assertThatThrownBy(() -> pointService.chargeUserPoints(id, bigAmount))
+                .isInstanceOf(PointException.class)
+                .extracting(err -> ((PointException) err).getErrorCode())
+                .isEqualTo(ErrorCode.POINT_CHARGE_LIMIT_EXCEEDED);
+
+        verify(pointHistoryService, never()).saveUseHistory(anyLong(), anyLong(), anyLong());
+    }
+
 }
