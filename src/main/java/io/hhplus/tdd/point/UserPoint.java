@@ -5,9 +5,10 @@ public record UserPoint(
         long point,
         long updateMillis
 ) {
+    final static long CHARGE_LIMIT = 10000;
 
     public UserPoint {
-        if (point < 0) throw new PointException(ErrorCode.INSUFFICIENT_POINTS);
+        if (point < 0) throw new PointException(ErrorCode.INVALID_POINT_AMOUNT);
     }
 
     public static UserPoint empty(long id) {

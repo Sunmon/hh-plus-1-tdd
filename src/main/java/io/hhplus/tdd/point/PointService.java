@@ -28,8 +28,9 @@ public class PointService {
      * @param amount 포인트를 충전하려는 양
      * @return 포인트 충전 이후 업데이트된 포인트 상태
      */
-    public UserPoint chargeUserPoints(long userId, long amount) {
+    public UserPoint chargeUserPoints(long userId, long amount) throws PointException {
         if (amount < 0) throw new PointException(ErrorCode.INVALID_POINT_AMOUNT);
+        if (amount > UserPoint.CHARGE_LIMIT) throw new PointException(ErrorCode.POINT_CHARGE_LIMIT_EXCEEDED);
 
         UserPoint userPoint = getUserPoint(userId);
         UserPoint updated = userPointTable.insertOrUpdate(userId, userPoint.point() + amount);
