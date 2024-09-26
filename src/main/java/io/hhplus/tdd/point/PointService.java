@@ -1,6 +1,5 @@
 package io.hhplus.tdd.point;
 
-import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,16 +22,15 @@ public class PointService {
     /**
      * 포인트를 충전하고, 충전된 후 잔액을 담은 UserPoint를 리턴한다
      *
-     * @param userId
-     * @param amount
-     * @return
+     * @param userId 포인트를 충전하려는 유저 id
+     * @param amount 포인트를 충전하려는 양
+     * @return 포인트 충전 이후 업데이트된 포인트 상태
      */
     public UserPoint chargeUserPoints(long userId, long amount) {
         if (amount < 0) throw new PointException(ErrorCode.INVALID_POINT_AMOUNT);
-        // TODO try-catch
+
         UserPoint userPoint = getUserPoint(userId);
         System.out.println("hello world");
-        // FIXME 이 지점에 히스토리를 넣는게 맞나? 리턴하기 전... 유저포인트 업데이트 하기 전에?
         UserPoint updated = userPointTable.insertOrUpdate(userId, userPoint.point() + amount);
         pointHistoryService.saveChargeHistory(updated.id(), amount, updated.updateMillis());
         return updated;
@@ -41,16 +39,15 @@ public class PointService {
     /**
      * 포인트를 사용하고, 사용후 남은 잔액을 담은 UserPoint를 리턴한다
      *
-     * @param userId
-     * @param amount
-     * @return
+     * @param userId 포인트를 충전하려는 유저 id
+     * @param amount 포인트를 충전하려는 양
+     * @return 포인트 사용 이후 업데이트된 포인트 상태
      */
     public UserPoint useUserPoints(long userId, long amount) throws PointException {
         if (amount < 0) throw new PointException(ErrorCode.INVALID_POINT_AMOUNT);
-        // TODO try-catch
+
         UserPoint userPoint = getUserPoint(userId);
         if (userPoint.point() < amount) throw new PointException(ErrorCode.INSUFFICIENT_POINTS);
-
 
         UserPoint updated = userPointTable.insertOrUpdate(userId, userPoint.point() - amount);
         pointHistoryService.saveUseHistory(updated.id(), amount, updated.updateMillis());

@@ -1,7 +1,5 @@
 package io.hhplus.tdd.point;
 
-import io.hhplus.tdd.database.PointHistoryTable;
-import io.hhplus.tdd.database.UserPointTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +13,13 @@ public class PointController {
 
     private static final Logger log = LoggerFactory.getLogger(PointController.class);
     private final PointService pointService;
+    private final PointHistoryService pointHistoryService;
 
 
     @Autowired
-    public PointController(PointService pointService) {
+    public PointController(PointService pointService, PointHistoryService pointHistoryService) {
         this.pointService = pointService;
+        this.pointHistoryService = pointHistoryService;
     }
 
 
@@ -30,6 +30,7 @@ public class PointController {
     public UserPoint point(
             @PathVariable long id
     ) {
+        log.info("포인트 조회 id: {}", id);
         return pointService.getUserPoint(id);
     }
 
@@ -40,9 +41,8 @@ public class PointController {
     public List<PointHistory> history(
             @PathVariable long id
     ) {
-        // NOTE - 원본을 불변으로 넘겨줄 필요가 있는지?
-//        return pointHistoryTable.selectAllByUserId(id);
-        return null;
+        log.info("포인트 내역 조회 id: {}", id);
+        return pointHistoryService.getPointHistories(id);
     }
 
     /**
@@ -53,9 +53,8 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-// TODO 실수로 들어오는 경우 테스트
+        log.info("포인트 충전 id: {}, 금액: {}", id, amount);
         return pointService.chargeUserPoints(id, amount);
-
     }
 
     /**
@@ -66,6 +65,7 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
+        log.info("vㅗ인트 사용 id: {}, 금액: {}", id, amount);
         return pointService.useUserPoints(id, amount);
     }
 }

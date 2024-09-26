@@ -36,7 +36,7 @@ public class PointHistoryServiceTest {
                 new PointHistory(id++, userId, 1000, TransactionType.CHARGE, currentTime),
                 new PointHistory(id++, userId, 500, TransactionType.USE, currentTime),
                 new PointHistory(id++, userId, 100, TransactionType.USE, currentTime),
-                new PointHistory(id++, userId, 2000, TransactionType.CHARGE, currentTime)
+                new PointHistory(id, userId, 2000, TransactionType.CHARGE, currentTime)
         );
 
         //when
@@ -59,7 +59,7 @@ public class PointHistoryServiceTest {
         long currentTime = Clock.systemDefaultZone().millis();
 
         PointHistory mockCharge = new PointHistory(id++, userId, amount, TransactionType.CHARGE, currentTime);
-        PointHistory mockUse = new PointHistory(id++, userId, amount, TransactionType.USE, currentTime);
+        PointHistory mockUse = new PointHistory(id, userId, amount, TransactionType.USE, currentTime);
 
         when(pointHistoryTable.insert(userId, amount, TransactionType.CHARGE, currentTime)).thenReturn(mockCharge);
         when(pointHistoryTable.insert(userId, amount, TransactionType.USE, currentTime)).thenReturn(mockUse);
